@@ -11,15 +11,23 @@
     ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
       // 定义运算符集合
       const operators = ['+', '-', '*', '/', '%', '.', '^'];
+      let result = '';
+
       // 检查 message 的最后两个字符是否都是运算符
       if (operators.includes(message[message.length - 1]) && operators.includes(message[message.length - 2])) {
-        // 如果是，去掉最后一个运算符
-        message = message.slice(0, -1);
+        // 如果是，不返回任何内容
+        result = '';
+      } else {
+        // 如果不是，返回最后一个字符（如果它是运算符）
+        if (operators.includes(message[message.length - 1])) {
+          result = message[message.length - 1];
+        }
       }
-      // 显示处理后的 message
-      document.getElementById('messageDisplay').innerHTML = message;
-      // 返回处理后的 message
-      callback(message);
+
+      // 显示处理结果
+      document.getElementById('messageDisplay').innerHTML = result;
+      // 返回处理结果
+      callback(result);
     });
   </script>
 </html>
