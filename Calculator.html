@@ -5,10 +5,12 @@
   </head>
   <body>
     <span id="messageDisplay"></span>
+    <span id="ResultDisplay"></span>
   </body>
 
   <script type="text/javascript">
     ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
+      document.getElementById('messageDisplay').innerHTML = message;
       // 定义运算符集合
       const operators = ['+', '-', '*', '/', '%', '.', '^'];
       let result = '';
@@ -25,7 +27,7 @@
       }
 
       // 显示处理结果
-      document.getElementById('messageDisplay').innerHTML = result;
+      document.getElementById('ResultDisplay').innerHTML = result;
       // 返回处理结果
       callback(result);
     });
