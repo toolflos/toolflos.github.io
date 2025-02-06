@@ -1,0 +1,45 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://thunkable.github.io/webviewer-extension/thunkableWebviewerExtension.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <span id="messageDisplay"></span>
+    <span id="ResultDisplay"></span>
+  </body>
+
+  <script type="text/javascript">
+    ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
+      document.getElementById('messageDisplay').innerHTML = message;
+
+      // 定义运算符集合
+      const operators = ['+', '-', '*', '/', '.', '^', '%'];
+      let result = '';
+
+      // 检查输入是否有效
+      try {
+        // 检查是否以运算符结尾或包含非法字符
+        if (operators.includes(message[message.length - 1]) || message.includes('**') || message.includes('//')) {
+          throw new Error('Invalid input');
+        }
+
+        // 使用 eval 函数计算表达式
+        result = eval(message);
+
+        // 检查除以零的情况
+        if (message.includes('/0')) {
+          throw new Error('Division by zero');
+        }
+      } catch (error) {
+        // 如果出现错误，返回 "Error"
+        result = 'Error';
+      }
+
+      // 显示结果
+      document.getElementById('ResultDisplay').innerHTML = result;
+
+      // 返回结果
+      callback(result);
+    });
+  </script>
+</html>
