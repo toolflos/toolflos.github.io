@@ -10,50 +10,70 @@
 
   <script type="text/javascript">
     ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
-      // 定义运算符集合
+
       const operators = ['+', '-', '*', '/', '%', '.', '^'];
 
-      // 定义正负数的特殊处理逻辑
-      const isNegativeNumber = (str) => {
+
+      const isValidNegativeNumber = (str) => {
+
         return str.startsWith('-') && !operators.includes(str[1]);
       };
 
-      // 初始化结果
+      const isValidNumber = (str) => {
+        return /^[+-]?\d+(\.\d+)?$/.test(str);
+      };
+
       let result = '';
 
-      // 检查 message 是否为空
       if (message.length === 0) {
         result = '';
       } else {
-        // 检查最后一个字符是否为运算符
+
         if (operators.includes(message[message.length - 1])) {
-          // 如果最后一个字符是运算符
+
           if (message.length === 1) {
-            // 单个运算符无效
+
             result = '';
           } else {
-            // 检查倒数第二个字符
+
             if (operators.includes(message[message.length - 2])) {
-              // 连续两个运算符无效，但允许正负数
-              if (message[message.length - 2] === '-' && isNegativeNumber(message.slice(0, message.length - 1))) {
+
+              if (message[message.length - 2] === '-' && isValidNegativeNumber(message.slice(0, message.length - 1))) {
                 result = message[message.length - 1];
               } else {
-                result = '';
+
+                if (message[message.length - 2] === '-' && message[message.length - 1] === '-' && message.length > 2 && message[message.length - 3] === '-') {
+                  result = '';
+                } else {
+                  result = message[message.length - 1];
+                }
               }
             } else {
-              // 倒数第二个字符不是运算符，返回最后一个运算符
+
               result = message[message.length - 1];
             }
           }
         } else {
-          // 如果最后一个字符不是运算符，返回整个字符串
-          result = message;
+
+          if (isValidNumber(message)) {
+            result = message;
+          } else {
+
+            if (isValidNegativeNumber(message)) {
+              result = message;
+            } else {
+              if (message.length > 2 && (message[message.length - 2] === '*' || message[message.length - 2] === '/') && isValidNegativeNumber(message.slice(message.length - 2))) {
+                result = message;
+              } else {
+                result = '';
+              }
+            }
+          }
         }
       }
 
-      // 显示处理结果
       document.getElementById('messageDisplay').innerHTML = result;
-      // 返回处理结果
+
       callback(result);
     });
   </script>
