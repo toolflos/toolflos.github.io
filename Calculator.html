@@ -9,14 +9,17 @@
 
   <script type="text/javascript">
     ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
+      // 定义运算符集合
+      const operators = ['+', '-', '*', '/', '%', '.', '^'];
+      // 检查 message 的最后两个字符是否都是运算符
+      if (operators.includes(message[message.length - 1]) && operators.includes(message[message.length - 2])) {
+        // 如果是，去掉最后一个运算符
+        message = message.slice(0, -1);
+      }
+      // 显示处理后的 message
       document.getElementById('messageDisplay').innerHTML = message;
+      // 返回处理后的 message
       callback(message);
-      //if (message === '1') {
-        //callback('Yes');
-      //} else {
-        //callback('No');
-      //}
     });
   </script>
-
 </html>
