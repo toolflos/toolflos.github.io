@@ -4,12 +4,19 @@
     <script src="https://thunkable.github.io/webviewer-extension/thunkableWebviewerExtension.js" type="text/javascript"></script>
   </head>
   <body>
+    <span id="messageDisplay"></span>
   </body>
-  
+
   <script type="text/javascript">
     ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
-        callback(message);
+      document.getElementById('messageDisplay').innerHTML = message;
+      callback(message);
+      //if (message === '1') {
+        //callback('Yes');
+      //} else {
+        //callback('No');
+      //}
     });
   </script>
-  
+
 </html>
