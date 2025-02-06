@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -5,60 +6,54 @@
   </head>
   <body>
     <span id="messageDisplay"></span>
-    <span id="ResultDisplay"></span>
   </body>
 
   <script type="text/javascript">
     ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
-      document.getElementById('messageDisplay').innerHTML = message;
-
       // 定义运算符集合
       const operators = ['+', '-', '*', '/', '%', '.', '^'];
+
+      // 定义正负数的特殊处理逻辑
+      const isNegativeNumber = (str) => {
+        return str.startsWith('-') && !operators.includes(str[1]);
+      };
+
+      // 初始化结果
       let result = '';
 
-      // 验证输入是否合法
-      try {
-        // 检查是否以运算符结尾
+      // 检查 message 是否为空
+      if (message.length === 0) {
+        result = '';
+      } else {
+        // 检查最后一个字符是否为运算符
         if (operators.includes(message[message.length - 1])) {
-          throw new Error('Expression ends with an operator');
-        }
-
-        // 检查是否包含非法的连续运算符（排除正负数的情况）
-        for (let i = 0; i < message.length - 1; i++) {
-          if (operators.includes(message[i]) && operators.includes(message[i + 1])) {
-            // 允许正负数的情况，如 "1--", "2+-", "2*+", "2/-"
-            if (!(message[i] === '-' && message[i + 1] === '-') && 
-                !(message[i] === '+' && message[i + 1] === '-') &&
-                !(message[i] === '*' && message[i + 1] === '+') &&
-                !(message[i] === '/' && message[i + 1] === '-') &&
-                !(message[i] === '*' && message[i + 1] === '-') &&
-                !(message[i] === '/' && message[i + 1] === '+')) {
-              throw new Error('Invalid consecutive operators');
+          // 如果最后一个字符是运算符
+          if (message.length === 1) {
+            // 单个运算符无效
+            result = '';
+          } else {
+            // 检查倒数第二个字符
+            if (operators.includes(message[message.length - 2])) {
+              // 连续两个运算符无效，但允许正负数
+              if (message[message.length - 2] === '-' && isNegativeNumber(message.slice(0, message.length - 1))) {
+                result = message[message.length - 1];
+              } else {
+                result = '';
+              }
+            } else {
+              // 倒数第二个字符不是运算符，返回最后一个运算符
+              result = message[message.length - 1];
             }
           }
+        } else {
+          // 如果最后一个字符不是运算符，返回整个字符串
+          result = message;
         }
-
-        // 检查除以零的情况
-        if (message.includes('/0')) {
-          throw new Error('Division by zero');
-        }
-
-        // 使用 Function 构造函数来安全地计算表达式
-        result = new Function('return ' + message)();
-
-        // 如果结果是数字，则保留两位小数
-        if (typeof result === 'number') {
-          result = result.toFixed(2);
-        }
-      } catch (error) {
-        // 如果出现错误，返回 "Error"
-        result = 'Error';
       }
 
-      // 显示结果
-      document.getElementById('ResultDisplay').innerHTML = result;
-
-      // 返回结果
+      // 显示处理结果
+      document.getElementById('messageDisplay').innerHTML = result;
+      // 返回处理结果
       callback(result);
     });
   </script>
