@@ -10,25 +10,16 @@
 
   <script type="text/javascript">
     ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
-
       const operators = ['+', '-', '*', '/', '%', '.', '^'];
 
-
-      const isValidNegativeNumber = (str) => {
-
+      const isNegativeNumber = (str) => {
         return str.startsWith('-') && !operators.includes(str[1]);
       };
 
-      const isValidNumber = (str) => {
-        return /^[+-]?\d+(\.\d+)?$/.test(str);
-      };
-
       let result = '';
-
       if (message.length === 0) {
         result = '';
       } else {
-
         if (operators.includes(message[message.length - 1])) {
 
           if (message.length === 1) {
@@ -38,15 +29,10 @@
 
             if (operators.includes(message[message.length - 2])) {
 
-              if (message[message.length - 2] === '-' && isValidNegativeNumber(message.slice(0, message.length - 1))) {
+              if (message[message.length - 2] === '-' && isNegativeNumber(message.slice(0, message.length - 1))) {
                 result = message[message.length - 1];
               } else {
-
-                if (message[message.length - 2] === '-' && message[message.length - 1] === '-' && message.length > 2 && message[message.length - 3] === '-') {
-                  result = '';
-                } else {
-                  result = message[message.length - 1];
-                }
+                result = '';
               }
             } else {
 
@@ -55,22 +41,10 @@
           }
         } else {
 
-          if (isValidNumber(message)) {
-            result = message;
-          } else {
-
-            if (isValidNegativeNumber(message)) {
-              result = message;
-            } else {
-              if (message.length > 2 && (message[message.length - 2] === '*' || message[message.length - 2] === '/') && isValidNegativeNumber(message.slice(message.length - 2))) {
-                result = message;
-              } else {
-                result = '';
-              }
-            }
-          }
+          result = message;
         }
       }
+
 
       document.getElementById('messageDisplay').innerHTML = result;
 
