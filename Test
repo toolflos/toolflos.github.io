@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://thunkable.github.io/webviewer-extension/thunkableWebviewerExtension.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <p>X: <span id="x"></span></p>
+    <p>Y: <span id="y"></span></p>
+    <p>Z: <span id="z"></span></p>
+    <br/>
+    <span id="ResultDisplay"></span>
+  </body>
+  <script type="text/javascript">
+    function extractValues(str) {
+        const regex = /x:(-?\d+)y:(-?\d+)z:(-?\d+)/;
+        const match = str.match(regex);
+
+        if (match) {
+          const x = match[1]; // x 的值
+          const y = match[2]; // y 的值
+          const z = match[3]; // z 的值
+          return { x, y, z };
+        } else {
+          return { x: null, y: null, z: null };
+        }
+      }
+
+    ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
+    const { x, y, z } = extractValues(message);
+
+    document.getElementById("x").textContent = x || "N/A";
+    document.getElementById("y").textContent = y || "N/A";
+    document.getElementById("z").textContent = z || "N/A";
+
+    callback(x,y,z);
+    });
+  </script>
+</html>
