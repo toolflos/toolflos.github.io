@@ -1,38 +1,116 @@
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://thunkable.github.io/webviewer-extension/thunkableWebviewerExtension.js" type="text/javascript"></script>
-  </head>
-  <body>
-    <p>X: <span id="x"></span></p>
-    <p>Y: <span id="y"></span></p>
-    <p>Z: <span id="z"></span></p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>滚球游戏</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #gameContainer {
+            position: relative;
+            width: 80%;
+            height: 60%;
+            border: 2px solid #000;
+            background-color: #fff;
+            overflow: hidden;
+        }
+        #ball {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #hole {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: black;
+            border-radius: 50%;
+            bottom: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="ball"></div>
+        <div id="hole"></div>
+    </div>
+    <p>X: <span id="x">N/A</span></p>
+    <p>Y: <span id="y">N/A</span></p>
+    <p>Z: <span id="z">N/A</span></p>
     <br/>
     <span id="ResultDisplay"></span>
-  </body>
-  <script type="text/javascript">
-    function extractValues(str) {
-        const regex = /x:(-?\d+)y:(-?\d+)z:(-?\d+)/;
-        const match = str.match(regex);
 
-        if (match) {
-          const x = match[1]; // x 的值
-          const y = match[2]; // y 的值
-          const z = match[3]; // z 的值
-          return { x, y, z };
-        } else {
-          return { x: null, y: null, z: null };
+    <script src="https://thunkable.github.io/webviewer-extension/thunkableWebviewerExtension.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        // 提取陀螺仪数据
+        function extractValues(str) {
+            const regex = /x:(-?\d+)y:(-?\d+)z:(-?\d+)/;
+            const match = str.match(regex);
+            if (match) {
+                const x = parseInt(match[1]);
+                const y = parseInt(match[2]);
+                const z = parseInt(match[3]);
+                return { x, y, z };
+            } else {
+                return { x: null, y: null, z: null };
+            }
         }
-      }
 
-    ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
-    const { x, y, z } = extractValues(message);
+        // 获取游戏元素
+        const ball = document.getElementById("ball");
+        const hole = document.getElementById("hole");
+        const gameContainer = document.getElementById("gameContainer");
+        const resultDisplay = document.getElementById("ResultDisplay");
 
-    document.getElementById("x").textContent = x || "N/A";
-    document.getElementById("y").textContent = y || "N/A";
-    document.getElementById("z").textContent = z || "N/A";
+        // 游戏逻辑
+        function moveBall(x, y) {
+            const rect = gameContainer.getBoundingClientRect();
+            const ballRect = ball.getBoundingClientRect();
+            const newX = ballRect.left + x;
+            const newY = ballRect.top + y;
 
-    callback(x,y,z);
-    });
-  </script>
+            // 检查是否超出边界
+            if (newX > rect.left && newX < rect.right && newY > rect.top && newY < rect.bottom) {
+                ball.style.left = `${newX - ballRect.width / 2}px`;
+                ball.style.top = `${newY - ballRect.height / 2}px`;
+
+                // 检查是否进入洞中
+                if (Math.abs(newX - hole.getBoundingClientRect().left) < 20 && Math.abs(newY - hole.getBoundingClientRect().top) < 20) {
+                    resultDisplay.textContent = "恭喜！球进洞了！";
+                }
+            }
+        }
+
+        // 接收Thunkable发送的数据
+        ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
+            const { x, y, z } = extractValues(message);
+
+            document.getElementById("x").textContent = x || "N/A";
+            document.getElementById("y").textContent = y || "N/A";
+            document.getElementById("z").textContent = z || "N/A";
+
+            // 根据陀螺仪数据移动球
+            if (x !== null && y !== null) {
+                moveBall(x * 0.5, y * 0.5); // 调整移动速度
+            }
+
+            callback(x, y, z);
+        });
+    </script>
+</body>
 </html>
