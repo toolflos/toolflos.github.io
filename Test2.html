@@ -59,8 +59,14 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBall()
+
+            
             x += dx;
-            y += dy;
+            y -= dy;
+
+            x = Math.max(ballRadius, Math.min(canvas.width - ballRadius, x));
+            y = Math.max(ballRadius, Math.min(canvas.height - ballRadius, y));
+            
             requestAnimationFrame(draw);
         }
 
