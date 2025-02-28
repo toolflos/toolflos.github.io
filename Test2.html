@@ -20,40 +20,36 @@
 </head>
 
 <body>
-    <h1>Test2</h1>
     <p>X: <span id="x">N/A</span></p>
     <p>Y: <span id="y">N/A</span></p>
     <p>Z: <span id="z">N/A</span></p>
-    <canvas id="myCanvas" width="300" height="200"></canvas>
+    <canvas id="myCanvas" width="400" height="500"></canvas>
 
     <script>
         var canvas = document.getElementById("myCanvas");
         var ctx = canvas.getContext("2d");
         var ballRadius = 10;
-        var x = canvas.width / 2;
-        var y = canvas.height - 30;
+        var x = ballRadius; // 球在最左上角
+        var y = ballRadius; // 球在最左上角
         var dx = 0;
         var dy = 0;
         var holeRadius = 20;
-        var holeX = Math.random() * (canvas.width - holeRadius * 2) + holeRadius;
-        var holeY = Math.random() * (canvas.height - holeRadius * 2) + holeRadius;
+        var holeX = canvas.width - holeRadius; // 洞在最右下角
+        var holeY = canvas.height - holeRadius; // 洞在最右下角
         var bricks = [];
-        var brickRowCount = 3;
-        var brickColumnCount = 5;
-        var brickWidth = 75;
-        var brickHeight = 20;
-        var brickPadding = 10;
-        var brickOffsetTop = 30;
-        var brickOffsetLeft = 30;
+        var brickWidth = 40;
+        var brickHeight = 40;
         var gameOver = false;
 
-        // Initialize bricks
-        for (var c = 0; c < brickColumnCount; c++) {
-            bricks[c] = [];
-            for (var r = 0; r < brickRowCount; r++) {
-                bricks[c][r] = { x: 0, y: 0, status: 1 };
-            }
-        }
+        // 定義磚塊的位置（作為障礙物）
+        bricks = [
+            { x: 100, y: 0, width: brickWidth, height: brickHeight },
+            { x: 100, y: 100, width: brickWidth, height: brickHeight },
+            { x: 200, y: 200, width: brickWidth, height: brickHeight },
+            { x: 300, y: 300, width: brickWidth, height: brickHeight },
+            { x: 0, y: 300, width: brickWidth, height: brickHeight },
+            { x: 300, y: 0, width: brickWidth, height: brickHeight },
+        ];
 
         function extractValues(str) {
             const regex = /x:(-?\d+)y:(-?\d+)z:(-?\d+)/;
@@ -85,32 +81,33 @@
         }
 
         function drawBricks() {
-            for (var c = 0; c < brickColumnCount; c++) {
-                for (var r = 0; r < brickRowCount; r++) {
-                    if (bricks[c][r].status === 1) {
-                        var brickX = (c * (brickWidth + brickPadding)) + brickOffsetLeft;
-                        var brickY = (r * (brickHeight + brickPadding)) + brickOffsetTop;
-                        bricks[c][r].x = brickX;
-                        bricks[c][r].y = brickY;
-                        ctx.beginPath();
-                        ctx.rect(brickX, brickY, brickWidth, brickHeight);
-                        ctx.fillStyle = "#0095DD";
-                        ctx.fill();
-                        ctx.closePath();
-                    }
-                }
-            }
+            ctx.fillStyle = "#0095DD";
+            bricks.forEach(brick => {
+                ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+            });
         }
 
-        function collisionDetection() {
-            for (var c = 0; c < brickColumnCount; c++) {
-                for (var r = 0; r < brickRowCount; r++) {
-                    var b = bricks[c][r];
-                    if (b.status === 1) {
-                        if (x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
-                            dy = -dy;
-                            b.status = 0;
-                        }
+        function checkCollisionWithBricks() {
+            for (var i = 0; i < bricks.length; i++) {
+                var brick = bricks[i];
+                if (
+                    x + ballRadius > brick.x &&
+                    x - ballRadius < brick.x + brick.width &&
+                    y + ballRadius > brick.y &&
+                    y - ballRadius < brick.y + brick.height
+                ) {
+                    // 球碰到磚塊，停止移動
+                    if (x - ballRadius < brick.x && dx > 0) {
+                        x = brick.x - ballRadius;
+                    }
+                    if (x + ballRadius > brick.x + brick.width && dx < 0) {
+                        x = brick.x + brick.width + ballRadius;
+                    }
+                    if (y - ballRadius < brick.y && dy > 0) {
+                        y = brick.y - ballRadius;
+                    }
+                    if (y + ballRadius > brick.y + brick.height && dy < 0) {
+                        y = brick.y + brick.height + ballRadius;
                     }
                 }
             }
@@ -132,12 +129,13 @@
             drawBall();
             drawHole();
             drawBricks();
-            collisionDetection();
+            checkCollisionWithBricks();
             checkWin();
 
             x -= dx;
             y += dy;
 
+            // 確保球不會超出畫布邊界
             x = Math.max(ballRadius, Math.min(canvas.width - ballRadius, x));
             y = Math.max(ballRadius, Math.min(canvas.height - ballRadius, y));
 
