@@ -61,8 +61,8 @@
             drawBall()
 
             
-            x += dx;
-            y -= dy;
+            x -= dx;
+            y += dy;
 
             x = Math.max(ballRadius, Math.min(canvas.width - ballRadius, x));
             y = Math.max(ballRadius, Math.min(canvas.height - ballRadius, y));
