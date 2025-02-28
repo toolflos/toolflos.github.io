@@ -23,7 +23,7 @@
     <p>X: <span id="x">N/A</span></p>
     <p>Y: <span id="y">N/A</span></p>
     <p>Z: <span id="z">N/A</span></p>
-    <canvas id="myCanvas" width="200" height="300"></canvas>
+    <canvas id="myCanvas" width="400" height="500"></canvas>
 
     <script>
         var canvas = document.getElementById("myCanvas");
@@ -33,6 +33,26 @@
         var y = canvas.height - 30;
         var dx = 0;
         var dy = 0;
+        var holeRadius = 20;
+        var holeX = Math.random() * (canvas.width - holeRadius * 2) + holeRadius;
+        var holeY = Math.random() * (canvas.height - holeRadius * 2) + holeRadius;
+        var bricks = [];
+        var brickRowCount = 3;
+        var brickColumnCount = 5;
+        var brickWidth = 75;
+        var brickHeight = 20;
+        var brickPadding = 10;
+        var brickOffsetTop = 30;
+        var brickOffsetLeft = 30;
+        var gameOver = false;
+
+        // Initialize bricks
+        for (var c = 0; c < brickColumnCount; c++) {
+            bricks[c] = [];
+            for (var r = 0; r < brickRowCount; r++) {
+                bricks[c][r] = { x: 0, y: 0, status: 1 };
+            }
+        }
 
         function extractValues(str) {
             const regex = /x:(-?\d+)y:(-?\d+)z:(-?\d+)/;
@@ -47,7 +67,6 @@
             }
         }
 
-
         function drawBall() {
             ctx.beginPath();
             ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
@@ -56,39 +75,93 @@
             ctx.closePath();
         }
 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawBall()
+        function drawHole() {
+            ctx.beginPath();
+            ctx.arc(holeX, holeY, holeRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "#000";
+            ctx.fill();
+            ctx.closePath();
+        }
 
-            
+        function drawBricks() {
+            for (var c = 0; c < brickColumnCount; c++) {
+                for (var r = 0; r < brickRowCount; r++) {
+                    if (bricks[c][r].status === 1) {
+                        var brickX = (c * (brickWidth + brickPadding)) + brickOffsetLeft;
+                        var brickY = (r * (brickHeight + brickPadding)) + brickOffsetTop;
+                        bricks[c][r].x = brickX;
+                        bricks[c][r].y = brickY;
+                        ctx.beginPath();
+                        ctx.rect(brickX, brickY, brickWidth, brickHeight);
+                        ctx.fillStyle = "#0095DD";
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+            }
+        }
+
+        function collisionDetection() {
+            for (var c = 0; c < brickColumnCount; c++) {
+                for (var r = 0; r < brickRowCount; r++) {
+                    var b = bricks[c][r];
+                    if (b.status === 1) {
+                        if (x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
+                            dy = -dy;
+                            b.status = 0;
+                        }
+                    }
+                }
+            }
+        }
+
+        function checkWin() {
+            var distance = Math.sqrt((x - holeX) ** 2 + (y - holeY) ** 2);
+            if (distance < ballRadius + holeRadius) {
+                gameOver = true;
+                alert("You Win!");
+                document.location.reload();
+            }
+        }
+
+        function draw() {
+            if (gameOver) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBall();
+            drawHole();
+            drawBricks();
+            collisionDetection();
+            checkWin();
+
             x -= dx;
             y += dy;
 
             x = Math.max(ballRadius, Math.min(canvas.width - ballRadius, x));
             y = Math.max(ballRadius, Math.min(canvas.height - ballRadius, y));
-            
+
             requestAnimationFrame(draw);
         }
 
         ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
-            const { x, y, z } = extractValues(message);
+            const { x: accX, y: accY, z: accZ } = extractValues(message);
 
-            document.getElementById("x").textContent = x || "N/A";
-            document.getElementById("y").textContent = y || "N/A";
-            document.getElementById("z").textContent = z || "N/A";
+            document.getElementById("x").textContent = accX || "N/A";
+            document.getElementById("y").textContent = accY || "N/A";
+            document.getElementById("z").textContent = accZ || "N/A";
 
-            if (x !== null) {
-                dx = x
+            if (accX !== null) {
+                dx = accX;
             }
 
-            if (x !== null) {
-                dy = y
+            if (accY !== null) {
+                dy = accY;
             }
 
-            callback(x, y, z);
+            callback(accX, accY, accZ);
         });
 
-        draw()
+        draw();
     </script>
 </body>
 
