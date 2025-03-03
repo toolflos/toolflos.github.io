@@ -45,12 +45,17 @@
         },
         update() {
             ctx.beginPath();
+
+            this.location.x -= this.speed.x;
+            this.location.y += this.speed.y;
+
+            this.location.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.location.x));
+            this.location.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.location.y));
+
             ctx.arc(this.location.x, this.location.y, this.radius, 0, Math.PI * 2);
             ctx.fillStyle = "#0095DD";
             ctx.fill();
             ctx.closePath();
-            this.location.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.location.x));
-            this.location.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.location.y));
         }
     };
 
@@ -102,11 +107,11 @@
         const { x, y, z } = handleGyroscopeData(message);
 
             if (x !== null) {
-                Ball.location.x -= x
+                Ball.speed.x = x
             }
 
             if (x !== null) {
-                Ball.location.y += y
+                Ball.speed.y = y
             }
     });
 
