@@ -21,12 +21,12 @@
 </head>
 
 <body>
-    <h1>Test8</h1>
+    <h1>Test9</h1>
     <canvas id="playground" width="370" height="430"></canvas>
 </body>
 
 <script>
-    //BallObject
+    // BallObject
     function BallObject(initialLocation, radius) {
         this.initialLocation = { ...initialLocation };
         this.location = {
@@ -35,9 +35,11 @@
         };
         this.radius = radius;
         this.speed = { x: 0, y: 0 };
+        this.acceleration = { x: 0, y: 0 }; // 新增加速度屬性
+        this.maxSpeed = 5; // 速度上限
     }
 
-    //Method of BallObject
+    // Method of BallObject
     BallObject.prototype = {
         reset() {
             this.location.x = this.initialLocation.x;
@@ -46,24 +48,39 @@
         update() {
             ctx.beginPath();
 
+            // 更新速度，並限制速度不超過最大值
+            this.speed.x += this.acceleration.x;
+            this.speed.y += this.acceleration.y;
+
+            // 限制速度
+            this.speed.x = Math.max(-this.maxSpeed, Math.min(this.maxSpeed, this.speed.x));
+            this.speed.y = Math.max(-this.maxSpeed, Math.min(this.maxSpeed, this.speed.y));
+
+            // 更新位置
             this.location.x -= this.speed.x;
             this.location.y += this.speed.y;
 
+            // 確保球不會超出畫布邊界
             this.location.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.location.x));
             this.location.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.location.y));
 
+            // 繪製球
             ctx.arc(this.location.x, this.location.y, this.radius, 0, Math.PI * 2);
             ctx.fillStyle = "#0095DD";
             ctx.fill();
             ctx.closePath();
+
+            // 模擬慣性效果：速度逐漸減小
+            this.speed.x *= 0.98; // 0.98 是阻尼係數，可以調整
+            this.speed.y *= 0.98;
         }
     };
 
-    //Canvas
+    // Canvas
     var canvas = document.getElementById("playground");
     var ctx = canvas.getContext("2d");
 
-    //Ball
+    // Ball
     var Ball = new BallObject(
         {
             x: 10,
@@ -72,14 +89,14 @@
         10
     );
 
-    //Public
+    // Public
     var objectList = [Ball];
 
-    //draw
+    // draw
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        //Update Object
+        // Update Object
         for (var i = 0; i < objectList.length; i++) {
             var object = objectList[i];
             object.update();
@@ -88,8 +105,8 @@
         requestAnimationFrame(draw);
     }
 
-    //handleGyroscopeData
-    function handleGyroscopeData (str) {
+    // handleGyroscopeData
+    function handleGyroscopeData(str) {
         const regex = /x:(-?\d+)y:(-?\d+)z:(-?\d+)/;
         const match = str.match(regex);
         if (match) {
@@ -102,17 +119,16 @@
         }
     }
 
-
     ThunkableWebviewerExtension.receiveMessage(function (message) {
         const { x, y, z } = handleGyroscopeData(message);
 
-            if (x !== null) {
-                Ball.speed.x = x
-            }
+        if (x !== null) {
+            Ball.acceleration.x = x * 0.1; // 0.1 是加速度係數，可以調整
+        }
 
-            if (x !== null) {
-                Ball.speed.y = y
-            }
+        if (y !== null) {
+            Ball.acceleration.y = y * 0.1; // 0.1 是加速度係數，可以調整
+        }
     });
 
     draw();
