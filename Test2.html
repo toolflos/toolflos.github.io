@@ -21,7 +21,7 @@
 </head>
 
 <body>
-    <h1>Test9</h1>
+    <h1>Test10</h1>
     <canvas id="playground" width="370" height="430"></canvas>
 </body>
 
@@ -36,7 +36,7 @@
         this.radius = radius;
         this.speed = { x: 0, y: 0 };
         this.acceleration = { x: 0, y: 0 }; // 新增加速度屬性
-        this.maxSpeed = 5; // 速度上限
+        this.maxSpeed = 10; // 速度上限
     }
 
     // Method of BallObject
@@ -73,6 +73,48 @@
             // 模擬慣性效果：速度逐漸減小
             this.speed.x *= 0.98; // 0.98 是阻尼係數，可以調整
             this.speed.y *= 0.98;
+        },
+        isColliding(other) {
+            // 計算球與矩形之間的最接近點
+            let closestX = Math.max(other.location.x, Math.min(this.location.x, other.location.x + other.width));
+            let closestY = Math.max(other.location.y, Math.min(this.location.y, other.location.y + other.height));
+
+            // 計算球心與最接近點的距離
+            let distanceX = this.location.x - closestX;
+            let distanceY = this.location.y - closestY;
+            let distanceSquared = distanceX * distanceX + distanceY * distanceY;
+
+            // 如果距離小於球的半徑平方，則發生碰撞
+            return distanceSquared < this.radius * this.radius;
+        }
+
+
+    };
+
+    // BrickObject
+    function BrickObject(initialLocation, width, height, isDestroyed) {
+        this.initialLocation = { ...initialLocation };
+        this.location = {
+            x: initialLocation.x,
+            y: initialLocation.y
+        };
+        this.width = width;
+        this.height = height;
+        this.isDestroyed = isDestroyed;
+    }
+
+    BallObject.prototype = {
+        reset() {
+            this.location.x = this.initialLocation.x;
+            this.location.y = this.initialLocation.y;
+        },
+        update() {
+            ctx.beginPath();
+            ctx.fillStyle = "#008000";
+            bricks.forEach(brick => {
+                ctx.fillRect(this.location.x, this.location.y, brick.width, brick.height);
+            });
+            ctx.closePath();
         }
     };
 
@@ -81,16 +123,13 @@
     var ctx = canvas.getContext("2d");
 
     // Ball
-    var Ball = new BallObject(
-        {
-            x: 10,
-            y: 10
-        },
-        10
-    );
+    var Ball = new BallObject({ x: 10, y: 10 }, 10);
+
+    // Brick
+    var bricks1 = new BrickObject({ x: 100, y: 100 }, 100, 20, false)
 
     // Public
-    var objectList = [Ball];
+    var objectList = [Ball, bricks1];
 
     // draw
     function draw() {
