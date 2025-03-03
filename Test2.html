@@ -21,7 +21,7 @@
 </head>
 
 <body>
-    <h1>Test10</h1>
+    <h1>Test11</h1>
     <canvas id="playground" width="370" height="430"></canvas>
 </body>
 
@@ -87,8 +87,6 @@
             // 如果距離小於球的半徑平方，則發生碰撞
             return distanceSquared < this.radius * this.radius;
         }
-
-
     };
 
     // BrickObject
@@ -103,7 +101,7 @@
         this.isDestroyed = isDestroyed;
     }
 
-    BallObject.prototype = {
+    BrickObject.prototype = {
         reset() {
             this.location.x = this.initialLocation.x;
             this.location.y = this.initialLocation.y;
@@ -111,9 +109,7 @@
         update() {
             ctx.beginPath();
             ctx.fillStyle = "#008000";
-            bricks.forEach(brick => {
-                ctx.fillRect(this.location.x, this.location.y, brick.width, brick.height);
-            });
+            ctx.fillRect(this.location.x, this.location.y, this.width, this.height);
             ctx.closePath();
         }
     };
@@ -126,7 +122,7 @@
     var Ball = new BallObject({ x: 10, y: 10 }, 10);
 
     // Brick
-    var bricks1 = new BrickObject({ x: 100, y: 100 }, 100, 20, false)
+    var bricks1 = new BrickObject({ x: 100, y: 100 }, 100, 20, false);
 
     // Public
     var objectList = [Ball, bricks1];
@@ -139,6 +135,11 @@
         for (var i = 0; i < objectList.length; i++) {
             var object = objectList[i];
             object.update();
+        }
+
+        // 檢查碰撞
+        if (Ball.isColliding(bricks1)) {
+            console.log("Collision detected!");
         }
 
         requestAnimationFrame(draw);
