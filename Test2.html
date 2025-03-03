@@ -20,8 +20,8 @@
 </head>
 
 <body>
-    <h1>Test4</h1>
-    <canvas id="myCanvas" width="200" height="300"></canvas>
+    <h1>Test5</h1>
+    <canvas id="myCanvas" width="400" height="450"></canvas>
 
     <script>
         //Defining the Canvas
@@ -30,14 +30,15 @@
 
         //Defining the ball
         var ballRadius = 10;
-        var x = canvas.width / 2;
-        var y = canvas.height - 30;
-        var dx = 0;
-        var dy = 0;
+        var ballx = 10;
+        var bally = 10;
+        var balldx = 0;
+        var balldy = 0;
 
         //Defining the hole
         var holeRadius = 10;
-        
+        var holex = canvas.width - 10;
+        var holey = canvas.height - 10;
 
         //handle the gyroscope data from thunkable
         function extractValues(str) {
@@ -53,37 +54,49 @@
             }
         }
 
-
+        //Rendering Ball
         function drawBall() {
             ctx.beginPath();
-            ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+            ctx.arc(ballx, bally, ballRadius, 0, Math.PI * 2);
             ctx.fillStyle = "#0095DD";
             ctx.fill();
             ctx.closePath();
         }
 
+        //Rendering hole
+        function drawhole() {
+            ctx.beginPath();
+            ctx.arc(holex, holey, holeRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "#000000";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        //Main Drawing process
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBall()
+            drawhole()
+            
+            ballx -= balldx;
+            bally += balldy;
 
-            x -= dx;
-            y += dy;
-
-            x = Math.max(ballRadius, Math.min(canvas.width - ballRadius, x));
-            y = Math.max(ballRadius, Math.min(canvas.height - ballRadius, y));
+            ballx = Math.max(ballRadius, Math.min(canvas.width - ballRadius, ballx));
+            bally = Math.max(ballRadius, Math.min(canvas.height - ballRadius, bally));
             
             requestAnimationFrame(draw);
         }
 
+        //Accept data from Thunkable
         ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
             const { x, y, z } = extractValues(message);
 
             if (x !== null) {
-                dx = x
+                balldx = x
             }
 
             if (x !== null) {
-                dy = y
+                balldy = y
             }
 
             callback(x, y, z);
