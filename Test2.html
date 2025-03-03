@@ -49,6 +49,8 @@
             ctx.fillStyle = "#0095DD";
             ctx.fill();
             ctx.closePath();
+            this.location.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.location.x));
+            this.location.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.location.y));
         }
     };
 
@@ -68,7 +70,7 @@
     //Public
     var objectList = [Ball];
 
-    //Main Drawing process
+    //draw
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -81,8 +83,31 @@
         requestAnimationFrame(draw);
     }
 
+    //handleGyroscopeData
+    function handleGyroscopeData (str) {
+        const regex = /x:(-?\d+)y:(-?\d+)z:(-?\d+)/;
+        const match = str.match(regex);
+        if (match) {
+            const x = parseInt(match[1]);
+            const y = parseInt(match[2]);
+            const z = parseInt(match[3]);
+            return { x, y, z };
+        } else {
+            return { x: null, y: null, z: null };
+        }
+    }
+
+
     ThunkableWebviewerExtension.receiveMessage(function (message) {
-        alert(message)
+        const { x, y, z } = handleGyroscopeData(message);
+
+            if (x !== null) {
+                Ball.location.x -= x
+            }
+
+            if (x !== null) {
+                Ball.location.y += y
+            }
     });
 
     draw();
