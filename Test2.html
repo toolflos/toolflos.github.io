@@ -4,7 +4,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://thunkable.github.io/webviewer-extension/thunkableWebviewerExtension.js" type="text/javascript"></script>
+    <script src="https://thunkable.github.io/webviewer-extension/thunkableWebviewerExtension.js"
+        type="text/javascript"></script>
     <style>
         * {
             padding: 0;
@@ -20,90 +21,71 @@
 </head>
 
 <body>
-    <h1>Test5</h1>
-    <canvas id="myCanvas" width="400" height="450"></canvas>
+    <h1>Test7</h1>
+    <canvas id="playground" width="370" height="430"></canvas>
+</body>
 
-    <script>
-        //Defining the Canvas
-        var canvas = document.getElementById("myCanvas");
-        var ctx = canvas.getContext("2d");
+<script>
+    //BallObject
+    function BallObject(initialLocation, radius) {
+        this.initialLocation = { ...initialLocation };
+        this.location = {
+            x: initialLocation.x,
+            y: initialLocation.y
+        };
+        this.radius = radius;
+        this.speed = { x: 0, y: 0 };
+    }
 
-        //Defining the ball
-        var ballRadius = 10;
-        var ballx = 10;
-        var bally = 10;
-        var balldx = 0;
-        var balldy = 0;
-
-        //Defining the hole
-        var holeRadius = 10;
-        var holex = canvas.width - 10;
-        var holey = canvas.height - 10;
-
-        //handle the gyroscope data from thunkable
-        function extractValues(str) {
-            const regex = /x:(-?\d+)y:(-?\d+)z:(-?\d+)/;
-            const match = str.match(regex);
-            if (match) {
-                const x = parseInt(match[1]);
-                const y = parseInt(match[2]);
-                const z = parseInt(match[3]);
-                return { x, y, z };
-            } else {
-                return { x: null, y: null, z: null };
-            }
-        }
-
-        //Rendering Ball
-        function drawBall() {
+    //Method of BallObject
+    BallObject.prototype = {
+        reset() {
+            this.location.x = this.initialLocation.x;
+            this.location.y = this.initialLocation.y;
+        },
+        update() {
             ctx.beginPath();
-            ctx.arc(ballx, bally, ballRadius, 0, Math.PI * 2);
+            ctx.arc(this.location.x, this.location.y, this.radius, 0, Math.PI * 2);
             ctx.fillStyle = "#0095DD";
             ctx.fill();
             ctx.closePath();
         }
+    };
 
-        //Rendering hole
-        function drawhole() {
-            ctx.beginPath();
-            ctx.arc(holex, holey, holeRadius, 0, Math.PI * 2);
-            ctx.fillStyle = "#000000";
-            ctx.fill();
-            ctx.closePath();
+    //Canvas
+    var canvas = document.getElementById("playground");
+    var ctx = canvas.getContext("2d");
+
+    //Ball
+    var Ball = new BallObject(
+        {
+            x: 10,
+            y: 10
+        },
+        10
+    );
+
+    //Public
+    var objectList = [Ball];
+
+    //Main Drawing process
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        //Update Object
+        for (var i = 0; i < objectList.length; i++) {
+            var object = objectList[i];
+            object.update();
         }
 
-        //Main Drawing process
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawBall()
-            drawhole()
-            
-            ballx -= balldx;
-            bally += balldy;
+        requestAnimationFrame(draw);
+    }
 
-            ballx = Math.max(ballRadius, Math.min(canvas.width - ballRadius, ballx));
-            bally = Math.max(ballRadius, Math.min(canvas.height - ballRadius, bally));
-            
-            requestAnimationFrame(draw);
-        }
+    ThunkableWebviewerExtension.receiveMessage(function (message) {
+        alert(message)
+    });
 
-        //Accept data from Thunkable
-        ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
-            const { x, y, z } = extractValues(message);
-
-            if (x !== null) {
-                balldx = x
-            }
-
-            if (x !== null) {
-                balldy = y
-            }
-
-            callback(x, y, z);
-        });
-
-        draw()
-    </script>
-</body>
+    draw();
+</script>
 
 </html>
