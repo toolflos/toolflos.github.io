@@ -35,6 +35,10 @@
         var dx = 0;
         var dy = 0;
 
+        //Defining the hole
+        var holeRadius = 10;
+        
+
         //handle the gyroscope data from thunkable
         function extractValues(str) {
             const regex = /x:(-?\d+)y:(-?\d+)z:(-?\d+)/;
@@ -73,10 +77,6 @@
 
         ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
             const { x, y, z } = extractValues(message);
-
-            document.getElementById("x").textContent = x || "N/A";
-            document.getElementById("y").textContent = y || "N/A";
-            document.getElementById("z").textContent = z || "N/A";
 
             if (x !== null) {
                 dx = x
