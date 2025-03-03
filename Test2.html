@@ -20,38 +20,22 @@
 </head>
 
 <body>
-    <h1>Test3</h1>
-    <p>X: <span id="x">N/A</span></p>
-    <p>Y: <span id="y">N/A</span></p>
-    <p>Z: <span id="z">N/A</span></p>
-    <canvas id="myCanvas" width="400" height="500"></canvas>
+    <h1>Test4</h1>
+    <canvas id="myCanvas" width="200" height="300"></canvas>
 
     <script>
+        //Defining the Canvas
         var canvas = document.getElementById("myCanvas");
         var ctx = canvas.getContext("2d");
+
+        //Defining the ball
         var ballRadius = 10;
-        var x = ballRadius; // 球在最左上角
-        var y = ballRadius; // 球在最左上角
+        var x = canvas.width / 2;
+        var y = canvas.height - 30;
         var dx = 0;
         var dy = 0;
-        var holeRadius = 20;
-        var holeX = canvas.width - holeRadius; // 洞在最右下角
-        var holeY = canvas.height - holeRadius; // 洞在最右下角
-        var bricks = [];
-        var brickWidth = 40;
-        var brickHeight = 40;
-        var gameOver = false;
 
-        // 定義磚塊的位置（作為障礙物）
-        bricks = [
-            { x: 100, y: 0, width: brickWidth, height: brickHeight },
-            { x: 100, y: 100, width: brickWidth, height: brickHeight },
-            { x: 200, y: 200, width: brickWidth, height: brickHeight },
-            { x: 300, y: 300, width: brickWidth, height: brickHeight },
-            { x: 0, y: 300, width: brickWidth, height: brickHeight },
-            { x: 300, y: 0, width: brickWidth, height: brickHeight },
-        ];
-
+        //handle the gyroscope data from thunkable
         function extractValues(str) {
             const regex = /x:(-?\d+)y:(-?\d+)z:(-?\d+)/;
             const match = str.match(regex);
@@ -65,6 +49,7 @@
             }
         }
 
+
         function drawBall() {
             ctx.beginPath();
             ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
@@ -73,95 +58,38 @@
             ctx.closePath();
         }
 
-        function drawHole() {
-            ctx.beginPath();
-            ctx.arc(holeX, holeY, holeRadius, 0, Math.PI * 2);
-            ctx.fillStyle = "#000";
-            ctx.fill();
-            ctx.closePath();
-        }
-
-        function drawBricks() {
-            ctx.fillStyle = "#0095DD";
-            bricks.forEach(brick => {
-                ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
-            });
-        }
-
-        function checkCollisionWithBricks() {
-            for (var i = 0; i < bricks.length; i++) {
-                var brick = bricks[i];
-                if (
-                    x + ballRadius > brick.x &&
-                    x - ballRadius < brick.x + brick.width &&
-                    y + ballRadius > brick.y &&
-                    y - ballRadius < brick.y + brick.height
-                ) {
-                    // 球碰到磚塊，停止移動
-                    if (x - ballRadius < brick.x && dx > 0) {
-                        x = brick.x - ballRadius;
-                    }
-                    if (x + ballRadius > brick.x + brick.width && dx < 0) {
-                        x = brick.x + brick.width + ballRadius;
-                    }
-                    if (y - ballRadius < brick.y && dy > 0) {
-                        y = brick.y - ballRadius;
-                    }
-                    if (y + ballRadius > brick.y + brick.height && dy < 0) {
-                        y = brick.y + brick.height + ballRadius;
-                    }
-                }
-            }
-        }
-
-        function checkWin() {
-            var distance = Math.sqrt((x - holeX) ** 2 + (y - holeY) ** 2);
-            if (distance < ballRadius + holeRadius) {
-                gameOver = true;
-                alert("You Win!");
-                document.location.reload();
-            }
-        }
-
         function draw() {
-            if (gameOver) return;
-
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawBall();
-            drawHole();
-            drawBricks();
-            checkCollisionWithBricks();
-            checkWin();
+            drawBall()
 
             x -= dx;
             y += dy;
 
-            // 確保球不會超出畫布邊界
             x = Math.max(ballRadius, Math.min(canvas.width - ballRadius, x));
             y = Math.max(ballRadius, Math.min(canvas.height - ballRadius, y));
-
+            
             requestAnimationFrame(draw);
         }
 
         ThunkableWebviewerExtension.receiveMessageWithReturnValue(function(message, callback) {
-            const { x: accX, y: accY, z: accZ } = extractValues(message);
+            const { x, y, z } = extractValues(message);
 
-            document.getElementById("x").textContent = accX || "N/A";
-            document.getElementById("y").textContent = accY || "N/A";
-            document.getElementById("z").textContent = accZ || "N/A";
+            document.getElementById("x").textContent = x || "N/A";
+            document.getElementById("y").textContent = y || "N/A";
+            document.getElementById("z").textContent = z || "N/A";
 
-            if (accX !== null) {
-                dx = accX;
+            if (x !== null) {
+                dx = x
             }
 
-            if (accY !== null) {
-                dy = accY;
+            if (x !== null) {
+                dy = y
             }
 
-            callback(accX, accY, accZ);
+            callback(x, y, z);
         });
 
-        draw();
+        draw()
     </script>
 </body>
 
