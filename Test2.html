@@ -21,7 +21,7 @@
 </head>
 
 <body>
-    <h1>Test15</h1>
+    <h1>Test16</h1>
     <canvas id="playground" width="370" height="430"></canvas>
 </body>
 
@@ -68,9 +68,32 @@
             for (let i = 0; i < objectList.length; i++) {
                 let object = objectList[i];
                 if (object instanceof BrickObject && this.isColliding(object)) {
-                    // 確保球不會進入磚塊
-                    this.location.x = Math.max(this.radius, Math.min(object.width - this.radius, this.location.x));
-                    this.location.y = Math.max(this.radius, Math.min(object.height - this.radius, this.location.y));
+                    // 計算球與磚塊的碰撞邊界
+                    let closestX = Math.max(object.location.x, Math.min(this.location.x, object.location.x + object.width));
+                    let closestY = Math.max(object.location.y, Math.min(this.location.y, object.location.y + object.height));
+
+                    // 計算球心與最接近點的距離
+                    let distanceX = this.location.x - closestX;
+                    let distanceY = this.location.y - closestY;
+
+                    // 根據距離調整球的位置，使其剛好與磚塊接觸
+                    if (Math.abs(distanceX) > Math.abs(distanceY)) {
+                        // 水平方向碰撞
+                        if (distanceX > 0) {
+                            this.location.x = closestX + this.radius;
+                        } else {
+                            this.location.x = closestX - this.radius;
+                        }
+                        this.speed.x = 0; // 水平速度歸零
+                    } else {
+                        // 垂直方向碰撞
+                        if (distanceY > 0) {
+                            this.location.y = closestY + this.radius;
+                        } else {
+                            this.location.y = closestY - this.radius;
+                        }
+                        this.speed.y = 0; // 垂直速度歸零
+                    }
                 }
             }
 
