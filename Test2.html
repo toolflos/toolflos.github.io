@@ -56,46 +56,6 @@
             this.speed.x = Math.max(-this.maxSpeed, Math.min(this.maxSpeed, this.speed.x));
             this.speed.y = Math.max(-this.maxSpeed, Math.min(this.maxSpeed, this.speed.y));
 
-            // 預測下一幀的位置
-            let nextX = this.location.x - this.speed.x;
-            let nextY = this.location.y + this.speed.y;
-
-            // 檢查與磚塊的碰撞
-            for (let i = 0; i < objectList.length; i++) {
-                let object = objectList[i];
-                if (object instanceof BrickObject) {
-                    // 檢查球是否與磚塊碰撞
-                    if (this.isColliding(object)) {
-                        console.log("Collision detected!");
-
-                        // 計算球與磚塊的碰撞方向
-                        let overlapX = Math.min(
-                            Math.abs(this.location.x - (object.location.x + object.width)),
-                            Math.abs((this.location.x + this.radius * 2) - object.location.x)
-                        );
-                        let overlapY = Math.min(
-                            Math.abs(this.location.y - (object.location.y + object.height)),
-                            Math.abs((this.location.y + this.radius * 2) - object.location.y)
-                        );
-
-                        // 根據重疊量判斷碰撞方向
-                        if (overlapX < overlapY) {
-                            // 水平碰撞（左右）
-                            this.speed.x *= -1; // 反轉水平速度
-                            this.location.x = this.speed.x > 0
-                                ? object.location.x - this.radius * 2 // 左側碰撞
-                                : object.location.x + object.width + this.radius * 2; // 右側碰撞
-                        } else {
-                            // 垂直碰撞（上下）
-                            this.speed.y *= -1; // 反轉垂直速度
-                            this.location.y = this.speed.y > 0
-                                ? object.location.y - this.radius * 2 // 上側碰撞
-                                : object.location.y + object.height + this.radius * 2; // 下側碰撞
-                        }
-                    }
-                }
-            }
-
             // 更新位置
             this.location.x -= this.speed.x;
             this.location.y += this.speed.y;
@@ -103,6 +63,35 @@
             // 確保球不會超出畫布邊界
             this.location.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.location.x));
             this.location.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.location.y));
+
+            // 檢查與磚塊的碰撞
+            for (let i = 0; i < objectList.length; i++) {
+                let object = objectList[i];
+                if (object instanceof BrickObject && this.isColliding(object)) {
+                    console.log("Collision detected!");
+
+                    // 計算球與磚塊的重疊量
+                    let overlapX = Math.min(
+                        Math.abs(this.location.x - (object.location.x + object.width)),
+                        Math.abs((this.location.x + this.radius * 2) - object.location.x)
+                    );
+                    let overlapY = Math.min(
+                        Math.abs(this.location.y - (object.location.y + object.height)),
+                        Math.abs((this.location.y + this.radius * 2) - object.location.y)
+                    );
+
+                    // 根據重疊量判斷碰撞方向
+                    if (overlapX < overlapY) {
+                        // 水平碰撞（左右）
+                        this.speed.x *= -1; // 反轉水平速度
+                        this.location.x += (this.speed.x > 0) ? -overlapX : overlapX; // 調整位置
+                    } else {
+                        // 垂直碰撞（上下）
+                        this.speed.y *= -1; // 反轉垂直速度
+                        this.location.y += (this.speed.y > 0) ? -overlapY : overlapY; // 調整位置
+                    }
+                }
+            }
 
             // 繪製球
             ctx.arc(this.location.x, this.location.y, this.radius, 0, Math.PI * 2);
@@ -162,10 +151,11 @@
     var Ball = new BallObject({ x: 10, y: 10 }, 10);
 
     // Brick
-    var bricks1 = new BrickObject({ x: 100, y: 100 }, 100, 20, false);
+    var bricks1_1 = new BrickObject({ x: 100, y: 100 }, 100, 40, false);
+    var bricks1_2 = new BrickObject({ x: 200, y: 100 }, 40, 100, false);
 
     // Public
-    var objectList = [Ball, bricks1];
+    var objectList = [Ball, bricks1_1];
 
     // draw
     function draw() {
