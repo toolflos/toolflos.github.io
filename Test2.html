@@ -21,7 +21,7 @@
 </head>
 
 <body>
-    <h1>Test14</h1>
+    <h1>Test15</h1>
     <canvas id="playground" width="370" height="430"></canvas>
 </body>
 
@@ -71,14 +71,6 @@
                     // 確保球不會進入磚塊
                     this.location.x = Math.max(this.radius, Math.min(object.width - this.radius, this.location.x));
                     this.location.y = Math.max(this.radius, Math.min(object.height - this.radius, this.location.y));
-
-                    // 反轉速度，模擬碰撞
-                    if (this.location.x <= object.location.x + this.radius || this.location.x >= object.location.x + object.width - this.radius) {
-                        this.speed.x *= -1; // 水平方向反轉
-                    }
-                    if (this.location.y <= object.location.y + this.radius || this.location.y >= object.location.y + object.height - this.radius) {
-                        this.speed.y *= -1; // 垂直方向反轉
-                    }
                 }
             }
 
