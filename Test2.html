@@ -21,7 +21,7 @@
 </head>
 
 <body>
-    <h1>Test18</h1>
+    <h1>Test19</h1>
     <canvas id="playground" width="370" height="430"></canvas>
 </body>
 
@@ -63,6 +63,11 @@
             // 確保球不會超出畫布邊界
             this.location.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.location.x));
             this.location.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.location.y));
+
+            // Check if hole
+            if (object instanceof HoleObject && this.isColliding(object)) {
+                ThunkableWebviewerExtension.postMessage('win');
+            }
 
             // 檢查與磚塊的碰撞
             for (let i = 0; i < objectList.length; i++) {
@@ -167,7 +172,8 @@
             ctx.fillStyle = "#000000";
             ctx.fillRect(this.location.x, this.location.y, this.width, this.height);
             ctx.closePath();
-        }
+        },
+
     };
 
     // Canvas
@@ -185,7 +191,7 @@
     var Hole = new HoleObject({ x: 360, y: 420 }, 10);
 
     // Public
-    var objectList = [Ball, bricks1_1,bricks1_2];
+    var objectList = [Ball, bricks1_1,bricks1_2,Hole];
 
     // draw
     function draw() {
