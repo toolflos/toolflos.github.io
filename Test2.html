@@ -21,7 +21,7 @@
 </head>
 
 <body>
-    <h1>Test21</h1>
+    <h1>Test22</h1>
     <canvas id="playground" width="370" height="430"></canvas>
 </body>
 
@@ -69,8 +69,10 @@
                 let object = objectList[i];
 
                 // Check if hole
-                if (object instanceof HoleObject && this.isColliding(object)) {
-                    ThunkableWebviewerExtension.postMessage('win');
+                if (object instanceof HoleObject) {
+                    if (this.isCollisionHole(object)) {
+                        ThunkableWebviewerExtension.postMessage('win');
+                    }
                 }
 
                 if (object instanceof BrickObject && this.isColliding(object)) {
@@ -125,6 +127,18 @@
 
             // 如果距離小於球的半徑平方，則發生碰撞
             return distanceSquared < this.radius * this.radius;
+        },
+        isCollisionHole(hole) {
+            const dx = this.location.x - hole.location.x;
+            const dy = this.location.y - hole.location.y;
+            const distanceSquared = dx * dx + dy * dy;
+
+            // 計算兩半徑之和的平方
+            const radiiSum = this.radius + hole.radius;
+            const radiiSumSquared = radiiSum * radiiSum;
+
+            // 碰撞條件：距離平方 <= 半徑和平方
+            return distanceSquared <= radiiSumSquared;
         }
     };
 
@@ -190,7 +204,7 @@
     var bricks1_2 = new BrickObject({ x: 230, y: 100 }, 40, 230, false);
 
     // Hole
-    var Hole = new HoleObject({ x: 360, y: 420 }, 10);
+    var Hole = new HoleObject({ x: 340, y: 400 }, 20);
 
     // Public
     var objectList = [Ball, bricks1_1, bricks1_2, Hole];
