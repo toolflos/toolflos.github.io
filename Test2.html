@@ -21,7 +21,7 @@
 </head>
 
 <body>
-    <h1>Test20</h1>
+    <h1>Test21</h1>
     <canvas id="playground" width="370" height="430"></canvas>
 </body>
 
@@ -170,8 +170,9 @@
         },
         update() {
             ctx.beginPath();
+            ctx.arc(this.location.x, this.location.y, this.radius, 0, Math.PI * 2);
             ctx.fillStyle = "#000000";
-            ctx.fillRect(this.location.x, this.location.y, this.width, this.height);
+            ctx.fill();
             ctx.closePath();
         },
 
