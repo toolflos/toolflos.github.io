@@ -21,7 +21,7 @@
 </head>
 
 <body>
-    <h1>Test19</h1>
+    <h1>Test20</h1>
     <canvas id="playground" width="370" height="430"></canvas>
 </body>
 
@@ -64,14 +64,15 @@
             this.location.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.location.x));
             this.location.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.location.y));
 
-            // Check if hole
-            if (object instanceof HoleObject && this.isColliding(object)) {
-                ThunkableWebviewerExtension.postMessage('win');
-            }
-
             // 檢查與磚塊的碰撞
             for (let i = 0; i < objectList.length; i++) {
                 let object = objectList[i];
+
+                // Check if hole
+                if (object instanceof HoleObject && this.isColliding(object)) {
+                    ThunkableWebviewerExtension.postMessage('win');
+                }
+
                 if (object instanceof BrickObject && this.isColliding(object)) {
                     // 計算球與磚塊的碰撞邊界
                     let closestX = Math.max(object.location.x, Math.min(this.location.x, object.location.x + object.width));
@@ -191,7 +192,7 @@
     var Hole = new HoleObject({ x: 360, y: 420 }, 10);
 
     // Public
-    var objectList = [Ball, bricks1_1,bricks1_2,Hole];
+    var objectList = [Ball, bricks1_1, bricks1_2, Hole];
 
     // draw
     function draw() {
