@@ -21,7 +21,7 @@
 </head>
 
 <body>
-    <h1>Test17</h1>
+    <h1>Test18</h1>
     <canvas id="playground" width="370" height="430"></canvas>
 </body>
 
@@ -147,6 +147,29 @@
         }
     };
 
+    // HoleObject
+    function HoleObject(initialLocation, radius) {
+        this.initialLocation = { ...initialLocation };
+        this.location = {
+            x: initialLocation.x,
+            y: initialLocation.y
+        };
+        this.radius = radius;
+    }
+
+    HoleObject.prototype = {
+        reset() {
+            this.location.x = this.initialLocation.x;
+            this.location.y = this.initialLocation.y;
+        },
+        update() {
+            ctx.beginPath();
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(this.location.x, this.location.y, this.width, this.height);
+            ctx.closePath();
+        }
+    };
+
     // Canvas
     var canvas = document.getElementById("playground");
     var ctx = canvas.getContext("2d");
@@ -158,8 +181,11 @@
     var bricks1_1 = new BrickObject({ x: 0, y: 100 }, 230, 40, false);
     var bricks1_2 = new BrickObject({ x: 230, y: 100 }, 40, 230, false);
 
+    // Hole
+    var Hole = new HoleObject({ x: 360, y: 420 }, 10);
+
     // Public
-    var objectList = [Ball, bricks1_1];
+    var objectList = [Ball, bricks1_1,bricks1_2];
 
     // draw
     function draw() {
