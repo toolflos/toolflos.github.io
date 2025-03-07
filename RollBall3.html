@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://thunkable.github.io/webviewer-extension/thunkableWebviewerExtension.js"
+        type="text/javascript"></script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        canvas {
+            background: #eee;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="playground" width="370" height="430"></canvas>
+</body>
+
+<script>
+    // BallObject
+    function BallObject(initialLocation, radius) {
+        this.initialLocation = { ...initialLocation };
+        this.location = {
+            x: initialLocation.x,
+            y: initialLocation.y
+        };
+        this.radius = radius;
+        this.speed = { x: 0, y: 0 };
+        this.acceleration = { x: 0, y: 0 }; // 新增加速度屬性
+        this.maxSpeed = 10; // 速度上限
+    }
+
+    // Method of BallObject
+    BallObject.prototype = {
+        reset() {
+            this.location.x = this.initialLocation.x;
+            this.location.y = this.initialLocation.y;
+        },
+        update() {
+            ctx.beginPath();
+
+            // 更新速度，並限制速度不超過最大值
+            this.speed.x += this.acceleration.x;
+            this.speed.y += this.acceleration.y;
+
+            // 限制速度
+            this.speed.x = Math.max(-this.maxSpeed, Math.min(this.maxSpeed, this.speed.x));
+            this.speed.y = Math.max(-this.maxSpeed, Math.min(this.maxSpeed, this.speed.y));
+
+            // 更新位置
+            this.location.x -= this.speed.x;
+            this.location.y += this.speed.y;
+
+            // 確保球不會超出畫布邊界
+            this.location.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.location.x));
+            this.location.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.location.y));
+
+            // 檢查與磚塊的碰撞
+            for (let i = 0; i < objectList.length; i++) {
+                let object = objectList[i];
+
+                // Check if hole
+                if (object instanceof HoleObject) {
+                    if (this.isCollisionHole(object)) {
+                        ThunkableWebviewerExtension.postMessage('win');
+                    }
+                }
+
+                if (object instanceof BrickObject && this.isColliding(object)) {
+                    // 計算球與磚塊的碰撞邊界
+                    let closestX = Math.max(object.location.x, Math.min(this.location.x, object.location.x + object.width));
+                    let closestY = Math.max(object.location.y, Math.min(this.location.y, object.location.y + object.height));
+
+                    // 計算球心與最接近點的距離
+                    let distanceX = this.location.x - closestX;
+                    let distanceY = this.location.y - closestY;
+
+                    // 根據距離調整球的位置，使其剛好與磚塊接觸
+                    if (Math.abs(distanceX) > Math.abs(distanceY)) {
+                        // 水平方向碰撞
+                        if (distanceX > 0) {
+                            this.location.x = closestX + this.radius;
+                        } else {
+                            this.location.x = closestX - this.radius;
+                        }
+                        this.speed.x = 0; // 水平速度歸零
+                    } else {
+                        // 垂直方向碰撞
+                        if (distanceY > 0) {
+                            this.location.y = closestY + this.radius;
+                        } else {
+                            this.location.y = closestY - this.radius;
+                        }
+                        this.speed.y = 0; // 垂直速度歸零
+                    }
+                }
+            }
+
+            // 繪製球
+            ctx.arc(this.location.x, this.location.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = "#0095DD";
+            ctx.fill();
+            ctx.closePath();
+
+            // 模擬慣性效果：速度逐漸減小
+            this.speed.x *= 0.98; // 0.98 是阻尼係數，可以調整
+            this.speed.y *= 0.98;
+        },
+        isColliding(other) {
+            // 計算球與矩形之間的最接近點
+            let closestX = Math.max(other.location.x, Math.min(this.location.x, other.location.x + other.width));
+            let closestY = Math.max(other.location.y, Math.min(this.location.y, other.location.y + other.height));
+
+            // 計算球心與最接近點的距離
+            let distanceX = this.location.x - closestX;
+            let distanceY = this.location.y - closestY;
+            let distanceSquared = distanceX * distanceX + distanceY * distanceY;
+
+            // 如果距離小於球的半徑平方，則發生碰撞
+            return distanceSquared < this.radius * this.radius;
+        },
+        isCollisionHole(hole) {
+            const dx = this.location.x - hole.location.x;
+            const dy = this.location.y - hole.location.y;
+            const distanceSquared = dx * dx + dy * dy;
+
+            // 計算兩半徑之和的平方
+            const radiiSum = this.radius + hole.radius;
+            const radiiSumSquared = radiiSum * radiiSum;
+
+            // 碰撞條件：距離平方 <= 半徑和平方
+            return distanceSquared <= radiiSumSquared;
+        }
+    };
+
+    // BrickObject
+    function BrickObject(initialLocation, width, height, isDestroyed) {
+        this.initialLocation = { ...initialLocation };
+        this.location = {
+            x: initialLocation.x,
+            y: initialLocation.y
+        };
+        this.width = width;
+        this.height = height;
+        this.isDestroyed = isDestroyed;
+    }
+
+    BrickObject.prototype = {
+        reset() {
+            this.location.x = this.initialLocation.x;
+            this.location.y = this.initialLocation.y;
+        },
+        update() {
+            ctx.beginPath();
+            ctx.fillStyle = "#008000";
+            ctx.fillRect(this.location.x, this.location.y, this.width, this.height);
+            ctx.closePath();
+        }
+    };
+
+    // HoleObject
+    function HoleObject(initialLocation, radius) {
+        this.initialLocation = { ...initialLocation };
+        this.location = {
+            x: initialLocation.x,
+            y: initialLocation.y
+        };
+        this.radius = radius;
+    }
+
+    HoleObject.prototype = {
+        reset() {
+            this.location.x = this.initialLocation.x;
+            this.location.y = this.initialLocation.y;
+        },
+        update() {
+            ctx.beginPath();
+            ctx.arc(this.location.x, this.location.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = "#000000";
+            ctx.fill();
+            ctx.closePath();
+        },
+
+    };
+
+    // Canvas
+    var canvas = document.getElementById("playground");
+    var ctx = canvas.getContext("2d");
+
+    // Ball
+    var Ball = new BallObject({ x: 10, y: 10 }, 10);
+
+    // Brick
+    var bricks1_1 = new BrickObject({ x: 0, y: 100 }, 230, 40, false);
+    var bricks1_2 = new BrickObject({ x: 230, y: 100 }, 40, 230, false);
+
+    // Hole
+    var Hole = new HoleObject({ x: 340, y: 400 }, 20);
+
+    // Public
+    var objectList = [Ball, bricks1_1, bricks1_2, Hole];
+
+    // draw
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Update Object
+        for (var i = 0; i < objectList.length; i++) {
+            var object = objectList[i];
+            object.update();
+        }
+
+        requestAnimationFrame(draw);
+    }
+
+    // handleGyroscopeData
+    function handleGyroscopeData(str) {
+        const regex = /x:(-?\d+)y:(-?\d+)z:(-?\d+)/;
+        const match = str.match(regex);
+        if (match) {
+            const x = parseInt(match[1]);
+            const y = parseInt(match[2]);
+            const z = parseInt(match[3]);
+            return { x, y, z };
+        } else {
+            return { x: null, y: null, z: null };
+        }
+    }
+
+    ThunkableWebviewerExtension.receiveMessage(function (message) {
+        const { x, y, z } = handleGyroscopeData(message);
+
+        if (x !== null) {
+            Ball.acceleration.x = x * 0.1; // 0.1 是加速度係數，可以調整
+        }
+
+        if (y !== null) {
+            Ball.acceleration.y = y * 0.1; // 0.1 是加速度係數，可以調整
+        }
+    });
+
+    draw();
+</script>
+
+</html>
