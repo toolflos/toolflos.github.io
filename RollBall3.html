@@ -199,14 +199,18 @@
     var Ball = new BallObject({ x: 10, y: 10 }, 10);
 
     // Brick
-    var bricks1_1 = new BrickObject({ x: 0, y: 100 }, 230, 40, false);
-    var bricks1_2 = new BrickObject({ x: 230, y: 100 }, 40, 230, false);
+    var bricks1_1 = new BrickObject({ x: 140, y: 100 }, 30, 40, false);
+    var bricks1_2 = new BrickObject({ x: 230, y: 170 }, 40, 230, false);
+    var bricks1_3 = new BrickObject({ x: 230, y: 220 }, 230, 70, false);
+    var bricks1_4 = new BrickObject({ x: 140, y: 320 }, 30, 40, false);
+    var bricks1_5 = new BrickObject({ x: 150, y: 70 }, 40, 20, false);
+    var bricks1_6 = new BrickObject({ x: 30, y: 60 }, 20, 20, false);
 
     // Hole
     var Hole = new HoleObject({ x: 340, y: 400 }, 20);
 
     // Public
-    var objectList = [Ball, bricks1_1, bricks1_2, Hole];
+    var objectList = [Ball, bricks1_1, bricks1_2, bricks1_3,bricks1_4,bricks1_5,bricks1_6,Hole];
 
     // draw
     function draw() {
